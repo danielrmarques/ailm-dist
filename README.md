@@ -7,14 +7,24 @@ O AiLM é uma plataforma AI-First com método SPDD, agentes, governança e obser
 
 ## Antes de começar
 
-| requisito | por quê | como conferir |
+Instale **tudo isto antes** de começar. O `doctor` reprova o que falta, mas descobrir no fim é pior.
+
+| requisito | por quê | como instalar / conferir |
 |---|---|---|
-| **Node.js ≥ 22.6** | o motor roda em Node | `node --version` |
+| **Node.js ≥ 22.6** | o motor roda em Node | `node --version` · <https://nodejs.org> |
 | **Python ≥ 3.11** | gates e projeção de telemetria | `python --version` |
 | **git** | o AiLM opera sobre o seu repositório | `git --version` |
-| **Claude Code CLI**, autenticado | executa os nós de IA | `claude auth status` |
-| **PostgreSQL** alcançável | estado autoritativo das demandas | pode ser local, container ou serviço gerenciado |
-| **`psql`** no PATH | o setup aplica o schema | `psql --version` — no Debian/Ubuntu: `apt install postgresql-client` |
+| **bun** | **dependência dura** de abrir PR, publicar artefatos e gravar BCP | `bun --version` · <https://bun.sh> |
+| **Claude Code CLI**, autenticado | executa os nós de IA | `npm i -g @anthropic-ai/claude-code && claude login` |
+| **`psycopg2`** | acesso do Python ao Postgres | `pip install psycopg2-binary` |
+| **PostgreSQL** alcançável | estado autoritativo das demandas | local, container ou serviço gerenciado — você decide |
+| **`psql`** no PATH | o setup aplica o schema por ele | `psql --version` · Debian/Ubuntu: `apt install postgresql-client` · Windows: vem com o instalador do PostgreSQL |
+
+Tenha em mãos, para o `setup`:
+
+- a **URL de conexão completa** do seu Postgres (`postgres://usuario:senha@host:5432/banco`);
+- um **token do GitHub** com escopo `project` (ver [abaixo](#o-token-do-github-precisa-de-permissão-de-projects));
+- opcionalmente, um **token de bot do Slack** e o canal.
 
 Você **não** precisa de `gh`, de `npm install`, nem de conta no LangSmith.
 
@@ -71,10 +81,17 @@ cd ~/meus-projetos/meu-repo
 ./ailm doctor    # confirma que o ambiente está pronto
 ```
 
-No `cmd.exe` ou PowerShell, use `ailm` sem o `./`.
+No `cmd.exe` ou PowerShell é **`.\ailm.cmd setup`** — o PowerShell não executa comandos do diretório
+atual sem o `.\`, e `ailm` puro devolve `CommandNotFoundException`.
 
-O `setup` pergunta o mínimo: token e dono/repo do GitHub, a URL do banco, e opcionalmente o Slack.
-Ele **testa a conexão e aplica o schema** — não deixa isso para depois.
+O `setup` faz **7 perguntas**, todas coisas que você sabe responder: token, dono e repo do GitHub, a
+URL do banco, o nome da sua squad, e — opcionais — token e canal do Slack.
+
+As demais ~25 variáveis são ajuste fino e ficam com valores padrão no `.env`, **documentadas uma a
+uma**. Precisa mudar alguma? Edite o `.env` direto — é o caminho enquanto essas configurações não
+estiverem no AiLM Console. Para revê-las uma a uma no wizard: `./ailm setup --all`.
+
+Ele **testa a conexão e aplica o schema do banco** na mesma passada, em vez de deixar para depois.
 
 ### O token do GitHub precisa de permissão de Projects
 
