@@ -20,6 +20,58 @@ Instale **tudo isto antes** de começar. O `doctor` reprova o que falta, mas des
 | **PostgreSQL** alcançável | estado autoritativo das demandas | local, container ou serviço gerenciado — você decide |
 | **`psql`** no PATH | o setup aplica o schema por ele | `psql --version` · Debian/Ubuntu: `apt install postgresql-client` · Windows: vem com o instalador do PostgreSQL |
 
+### Máquina nova? Instale tudo de uma vez
+
+Os comandos abaixo cobrem a lista inteira. Depois deles, **abra um terminal novo** — instaladores
+mexem no `PATH` e a sessão atual não enxerga o que acabou de entrar.
+
+**Windows** (winget já vem no Windows 11; os IDs abaixo foram verificados):
+
+```powershell
+winget install OpenJS.NodeJS.LTS
+winget install Python.Python.3.12
+winget install Git.Git
+winget install Oven-sh.Bun
+winget install PostgreSQL.PostgreSQL.17   # traz o psql; se já tem um Postgres, veja a nota abaixo
+```
+
+**macOS** (Homebrew):
+
+```bash
+brew install node python git bun libpq
+brew link --force libpq          # sem isto o psql não entra no PATH
+```
+
+**Linux** (Debian/Ubuntu):
+
+```bash
+curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
+sudo apt install -y nodejs python3 python3-pip git postgresql-client
+curl -fsSL https://bun.sh/install | bash
+```
+
+Depois, em **qualquer** sistema — terminal novo:
+
+```bash
+npm install -g @anthropic-ai/claude-code
+claude login                                    # autentica; o AiLM usa sua assinatura
+
+pip install pyyaml jsonschema psycopg2-binary   # no macOS/Linux pode ser pip3
+```
+
+> `pyyaml` e `jsonschema` não são opcionais: o `validate.py` — que é gate do `ailm run` — importa os
+> dois. Sem eles a primeira demanda falha.
+
+> Só precisa do **PostgreSQL completo** se for hospedar o banco na própria máquina. Se o seu Postgres
+> é remoto (RDS, Cloud SQL, Neon, Supabase), basta o **cliente**: no Windows o instalador permite
+> marcar apenas *Command Line Tools*; no macOS/Linux os comandos acima já instalam só o cliente.
+
+Confira tudo de uma vez — nenhuma linha pode sair vazia:
+
+```bash
+node --version && python --version && git --version && bun --version && psql --version && claude --version
+```
+
 Tenha em mãos, para o `setup`:
 
 - a **URL de conexão completa** do seu Postgres (`postgres://usuario:senha@host:5432/banco`);
