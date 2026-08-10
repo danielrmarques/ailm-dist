@@ -50,6 +50,17 @@ sudo apt install -y nodejs python3 python3-pip git postgresql-client
 curl -fsSL https://bun.sh/install | bash
 ```
 
+> ⚠ **Windows: o instalador do PostgreSQL NÃO coloca o `psql` no PATH.** Medido em host limpo
+> (2026-08-10): tudo o mais funciona e só o `psql` fica invisível. Corrija com uma linha no
+> PowerShell — ela descobre o caminho, então serve para qualquer versão:
+>
+> ```powershell
+> $bin = (Get-ChildItem 'C:\Program Files\PostgreSQL\*\bin\psql.exe' | Select-Object -First 1).Directory.FullName
+> [Environment]::SetEnvironmentVariable('Path', "$([Environment]::GetEnvironmentVariable('Path','User'));$bin", 'User')
+> ```
+>
+> E abra **outro** terminal — este PATH novo só vale em sessões criadas depois.
+
 Depois, em **qualquer** sistema — terminal novo:
 
 ```bash
@@ -234,7 +245,8 @@ que está no disco.
 | `sha256sum: ailm-bundle.tgz: FAILED` | download corrompido; apague e baixe de novo |
 | `Cannot find module ...ailm-install.mjs` | o `tar -xzf` não rodou, ou você está fora de `/tmp/ailm` |
 | `./ailm: Permission denied` | `chmod +x ailm` |
-| `psql: command not found` no setup | instale o cliente do Postgres (`postgresql-client`) |
+| `psql` não é reconhecido (Windows) | o instalador do PostgreSQL **não** põe o `bin` no PATH — veja o aviso na seção de pré-requisitos |
+| `psql: command not found` (macOS/Linux) | instale o cliente (`postgresql-client`); no macOS falta o `brew link --force libpq` |
 | o `doctor` reprova em `critical` | ele diz o que fazer em cada linha; resolva de cima para baixo |
 
 Para desfazer tudo: `./ailm uninstall`.
