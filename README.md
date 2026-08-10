@@ -15,7 +15,7 @@ Instale **tudo isto antes** de começar. O `doctor` reprova o que falta, mas des
 | **Python ≥ 3.11** | gates e projeção de telemetria | `python --version` |
 | **git** | o AiLM opera sobre o seu repositório | `git --version` |
 | **bun** | **dependência dura** de abrir PR, publicar artefatos e gravar BCP | `bun --version` · <https://bun.sh> |
-| **Claude Code CLI**, autenticado | executa os nós de IA | `npm i -g @anthropic-ai/claude-code && claude login` |
+| **Claude Code CLI**, autenticado | executa os nós de IA | `npm i -g @anthropic-ai/claude-code` e depois `claude login` |
 | **`psycopg2`** | acesso do Python ao Postgres | `pip install psycopg2-binary` |
 | **PostgreSQL** alcançável | estado autoritativo das demandas | local, container ou serviço gerenciado — você decide |
 | **`psql`** no PATH | o setup aplica o schema por ele | `psql --version` · Debian/Ubuntu: `apt install postgresql-client` · Windows: vem com o instalador do PostgreSQL |
@@ -80,7 +80,12 @@ pip install pyyaml jsonschema psycopg2-binary   # no macOS/Linux pode ser pip3
 Confira tudo de uma vez — nenhuma linha pode sair vazia:
 
 ```bash
-node --version && python --version && git --version && bun --version && psql --version && claude --version
+node --version
+python --version
+git --version
+bun --version
+psql --version
+claude --version
 ```
 
 Tenha em mãos, para o `setup`:
@@ -93,10 +98,63 @@ Você **não** precisa de `gh`, de `npm install`, nem de conta no LangSmith.
 
 O AiLM se instala **dentro de um repositório git seu**, que é o projeto que ele vai operar.
 
-> **No Windows?** Os comandos abaixo são para Linux, macOS e **Git Bash**. Se você usa PowerShell ou
-> `cmd.exe`, pule para [Instalar no Windows sem Git Bash](#instalar-no-windows-sem-git-bash) — o
-> PowerShell não tem `sha256sum`, e o `curl` dele é um apelido para `Invoke-WebRequest`, que não
-> aceita estas opções.
+# Escolha o seu caminho
+
+Os passos são os mesmos, mas os **comandos diferem**. Siga UM dos dois — não misture.
+
+| você usa | vá para |
+|---|---|
+| **PowerShell** ou **cmd.exe** (Windows padrão) | [Windows sem Git Bash](#instalar-no-windows-sem-git-bash) — logo abaixo |
+| **Linux**, **macOS** ou **Git Bash** | [Passo 1](#1-baixar), depois desta seção |
+
+Por que não dá para usar os mesmos comandos: no PowerShell não existe `sha256sum`, `mkdir` não aceita
+`-p`, `&&` não é separador válido (5.1), e `curl` é apelido de `Invoke-WebRequest`, que rejeita
+`-sL -O`.
+
+## Instalar no Windows sem Git Bash
+
+Mesmas etapas, em PowerShell. Todos os comandos abaixo foram executados num Windows 11 limpo antes de
+entrarem aqui.
+
+Use **`curl.exe`** com o `.exe` explícito: sem ele o PowerShell resolve o apelido `curl` para
+`Invoke-WebRequest`, que não aceita `-sL -O`.
+
+```powershell
+$tmp = "$env:TEMP\ailm"
+New-Item -ItemType Directory -Force $tmp | Out-Null
+Set-Location $tmp
+
+curl.exe -sL -O https://github.com/danielrmarques/ailm-dist/releases/latest/download/ailm-bundle.tgz
+curl.exe -sL -O https://github.com/danielrmarques/ailm-dist/releases/latest/download/ailm-bundle.tgz.sha256
+```
+
+Confirme o download (o PowerShell compara sem diferenciar maiúsculas, então não normalize nada):
+
+```powershell
+$esperado = (Get-Content ailm-bundle.tgz.sha256).Split()[0]
+$obtido   = (Get-FileHash ailm-bundle.tgz -Algorithm SHA256).Hash
+if ($esperado -eq $obtido) { "checksum OK" } else { "PARE — checksum divergente" }
+```
+
+Extraia (o `tar` do Windows 10+ serve) e instale no **seu** repositório:
+
+```powershell
+tar -xzf ailm-bundle.tgz
+
+node "$tmp\.ailm\runtime\scripts\ailm-install.mjs" install $tmp C:\caminho\do\seu\repo
+```
+
+Configure — no PowerShell o wrapper é `.\ailm.cmd`, sem a barra do estilo Unix:
+
+```powershell
+Set-Location C:\caminho\do\seu\repo
+.\ailm.cmd setup
+.\ailm.cmd doctor
+```
+
+> Uma peculiaridade do PowerShell, não do AiLM: ele trata a saída de erro de programas externos como
+> se fossem exceções, então as mensagens de aviso do AiLM aparecem em vermelho e `$LASTEXITCODE` pode
+> não refletir o resultado real. Confie no que o `doctor` imprime, linha por linha.
 
 ## 1. Baixar
 
@@ -178,51 +236,6 @@ Sem esse escopo o `setup` avisa e diz o que fazer — ele não falha em silênci
 O AiLM escolhe o trilho pela complexidade da issue e conduz o ciclo. Demandas maiores pausam num
 **gate humano**: você aprova com `./ailm approve <run-id>` ou recusa com
 `./ailm reject <run-id> --reason "<motivo>"`.
-
-## Instalar no Windows sem Git Bash
-
-Mesmas etapas, em PowerShell. Todos os comandos abaixo foram executados num Windows 11 limpo antes de
-entrarem aqui.
-
-Use **`curl.exe`** com o `.exe` explícito: sem ele o PowerShell resolve o apelido `curl` para
-`Invoke-WebRequest`, que não aceita `-sL -O`.
-
-```powershell
-$tmp = "$env:TEMP\ailm"
-New-Item -ItemType Directory -Force $tmp | Out-Null
-Set-Location $tmp
-
-curl.exe -sL -O https://github.com/danielrmarques/ailm-dist/releases/latest/download/ailm-bundle.tgz
-curl.exe -sL -O https://github.com/danielrmarques/ailm-dist/releases/latest/download/ailm-bundle.tgz.sha256
-```
-
-Confirme o download (o PowerShell compara sem diferenciar maiúsculas, então não normalize nada):
-
-```powershell
-$esperado = (Get-Content ailm-bundle.tgz.sha256).Split()[0]
-$obtido   = (Get-FileHash ailm-bundle.tgz -Algorithm SHA256).Hash
-if ($esperado -eq $obtido) { "checksum OK" } else { "PARE — checksum divergente" }
-```
-
-Extraia (o `tar` do Windows 10+ serve) e instale no **seu** repositório:
-
-```powershell
-tar -xzf ailm-bundle.tgz
-
-node "$tmp\.ailm\runtime\scripts\ailm-install.mjs" install $tmp C:\caminho\do\seu\repo
-```
-
-Configure — no PowerShell o wrapper é `.\ailm.cmd`, sem a barra do estilo Unix:
-
-```powershell
-Set-Location C:\caminho\do\seu\repo
-.\ailm.cmd setup
-.\ailm.cmd doctor
-```
-
-> Uma peculiaridade do PowerShell, não do AiLM: ele trata a saída de erro de programas externos como
-> se fossem exceções, então as mensagens de aviso do AiLM aparecem em vermelho e `$LASTEXITCODE` pode
-> não refletir o resultado real. Confie no que o `doctor` imprime, linha por linha.
 
 ## Atualizar
 
