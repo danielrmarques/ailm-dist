@@ -152,9 +152,17 @@ Set-Location C:\caminho\do\seu\repo
 .\ailm.cmd doctor
 ```
 
-> Uma peculiaridade do PowerShell, não do AiLM: ele trata a saída de erro de programas externos como
-> se fossem exceções, então as mensagens de aviso do AiLM aparecem em vermelho e `$LASTEXITCODE` pode
-> não refletir o resultado real. Confie no que o `doctor` imprime, linha por linha.
+> Duas peculiaridades do PowerShell, nenhuma do AiLM:
+>
+> 1. ele trata a saída de erro de programas externos como exceção, então avisos aparecem em vermelho
+>    e `$LASTEXITCODE` pode não refletir o resultado real — confie no que o `doctor` imprime, linha
+>    por linha;
+> 2. ao **filtrar** a saída (`| Select-String`, `| Out-File`) ele redecodifica com o code page do
+>    console e os símbolos viram lixo (`Ô£ô` em vez de `✓`). Uma vez por sessão resolve:
+>
+>    ```powershell
+>    [Console]::OutputEncoding = [Text.Encoding]::UTF8
+>    ```
 
 ## 1. Baixar
 
