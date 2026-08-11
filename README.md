@@ -18,6 +18,7 @@ Instale **tudo isto antes** de começar. O `doctor` reprova o que falta, mas des
 | **Claude Code CLI**, autenticado | executa os nós de IA | `npm i -g @anthropic-ai/claude-code` e depois `claude login` |
 | **`psycopg2`** | acesso do Python ao Postgres | `pip install psycopg2-binary` |
 | **PostgreSQL** alcançável | estado autoritativo das demandas | local, container ou serviço gerenciado — você decide |
+| **`gh`** (GitHub CLI) | **só** para criar o Project V2 — instalar/atualizar não usa | `winget install GitHub.cli` · depois `gh auth login -s project` |
 | **`psql`** no PATH | o setup aplica o schema por ele | `psql --version` · Debian/Ubuntu: `apt install postgresql-client` · Windows: vem com o instalador do PostgreSQL |
 
 ### Máquina nova? São DUAS etapas
@@ -115,7 +116,19 @@ Tenha em mãos, para o `setup`:
 - um **token do GitHub** com escopo `project` (ver [abaixo](#o-token-do-github-precisa-de-permissão-de-projects));
 - opcionalmente, um **token de bot do Slack** e o canal.
 
-Você **não** precisa de `gh`, de `npm install`, nem de conta no LangSmith.
+Você **não** precisa de `npm install` nem de conta no LangSmith.
+
+> **`gh` (GitHub CLI): necessário para o Project.** Baixar, instalar e atualizar o AiLM funcionam sem
+> ele. Mas o passo que **cria o Project V2** usa o `gh` — sem ele o `setup` reporta
+> `spawnSync gh ENOENT` e o board não é criado (medido em host limpo, 2026-08-11).
+>
+> ```powershell
+> winget install GitHub.cli      # macOS: brew install gh · Linux: veja cli.github.com
+> ```
+>
+> Depois, em terminal novo: `gh auth login -s project` — o `-s project` é o escopo que o Project V2
+> exige. Se preferir não instalar o `gh`, o AiLM roda sem o board, mas você perde a projeção visual
+> das demandas (ADR-031).
 
 O AiLM se instala **dentro de um repositório git seu**, que é o projeto que ele vai operar.
 
@@ -287,6 +300,7 @@ que está no disco.
 | `sha256sum: ailm-bundle.tgz: FAILED` | download corrompido; apague e baixe de novo |
 | `Cannot find module ...ailm-install.mjs` | o `tar -xzf` não rodou, ou você está fora de `/tmp/ailm` |
 | `./ailm: Permission denied` | `chmod +x ailm` |
+| `bootstrap do Project falhou: spawnSync gh ENOENT` | o `gh` não está instalado — veja a nota na seção de pré-requisitos |
 | `npm` recusado: "execução de scripts foi desabilitada" | Execution Policy do PowerShell bloqueia o `npm.ps1` — use `npm.cmd` (ver etapa 2) |
 | `psql` não é reconhecido (Windows) | o instalador do PostgreSQL **não** põe o `bin` no PATH — veja o aviso na seção de pré-requisitos |
 | `psql: command not found` (macOS/Linux) | instale o cliente (`postgresql-client`); no macOS falta o `brew link --force libpq` |
