@@ -75,9 +75,21 @@ claude login                                    # autentica; o AiLM usa sua assi
 pip install pyyaml jsonschema psycopg2-binary   # no macOS/Linux pode ser pip3
 ```
 
+> ⚠ **PowerShell com Execution Policy restritiva** (padrão em Windows corporativo): o `npm` é um
+> script `.ps1` e será recusado com *"a execução de scripts foi desabilitada neste sistema"*. Medido em
+> host limpo (2026-08-11). Use os shims `.cmd`, que não passam pelo motor de scripts:
+>
+> ```powershell
+> npm.cmd install -g @anthropic-ai/claude-code
+> claude.cmd login
+> ```
+>
+> O `pip` não é afetado (é `.exe`). Alternativa, se a política da sua empresa permitir:
+> `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned` — aí `npm` e `claude` funcionam sem sufixo.
+
 > Se `claude --version` falhar **depois** de instalar: o diretório de binários globais do npm não está
 > no `PATH` da sessão. Abra outro terminal; se persistir, veja onde o npm põe os binários com
-> `npm prefix -g` e confirme que esse caminho está no `PATH`.
+> `npm.cmd prefix -g` e confirme que esse caminho está no `PATH`.
 
 > `pyyaml` e `jsonschema` não são opcionais: o `validate.py` — que é gate do `ailm run` — importa os
 > dois. Sem eles a primeira demanda falha.
@@ -275,6 +287,7 @@ que está no disco.
 | `sha256sum: ailm-bundle.tgz: FAILED` | download corrompido; apague e baixe de novo |
 | `Cannot find module ...ailm-install.mjs` | o `tar -xzf` não rodou, ou você está fora de `/tmp/ailm` |
 | `./ailm: Permission denied` | `chmod +x ailm` |
+| `npm` recusado: "execução de scripts foi desabilitada" | Execution Policy do PowerShell bloqueia o `npm.ps1` — use `npm.cmd` (ver etapa 2) |
 | `psql` não é reconhecido (Windows) | o instalador do PostgreSQL **não** põe o `bin` no PATH — veja o aviso na seção de pré-requisitos |
 | `psql: command not found` (macOS/Linux) | instale o cliente (`postgresql-client`); no macOS falta o `brew link --force libpq` |
 | o `doctor` reprova em `critical` | ele diz o que fazer em cada linha; resolva de cima para baixo |
