@@ -20,10 +20,12 @@ Instale **tudo isto antes** de começar. O `doctor` reprova o que falta, mas des
 | **PostgreSQL** alcançável | estado autoritativo das demandas | local, container ou serviço gerenciado — você decide |
 | **`psql`** no PATH | o setup aplica o schema por ele | `psql --version` · Debian/Ubuntu: `apt install postgresql-client` · Windows: vem com o instalador do PostgreSQL |
 
-### Máquina nova? Instale tudo de uma vez
+### Máquina nova? São DUAS etapas
 
-Os comandos abaixo cobrem a lista inteira. Depois deles, **abra um terminal novo** — instaladores
-mexem no `PATH` e a sessão atual não enxerga o que acabou de entrar.
+Faça as duas, na ordem. A etapa 1 depende do seu sistema; a etapa 2 é igual em todos e **é onde o
+`claude` entra** — parar na etapa 1 deixa o `claude --version` falhando.
+
+#### Etapa 1 — gerenciador de pacotes do sistema
 
 **Windows** (winget já vem no Windows 11; os IDs abaixo foram verificados):
 
@@ -61,7 +63,10 @@ curl -fsSL https://bun.sh/install | bash
 >
 > E abra **outro** terminal — este PATH novo só vale em sessões criadas depois.
 
-Depois, em **qualquer** sistema — terminal novo:
+#### Etapa 2 — igual em todos os sistemas
+
+**Abra um terminal NOVO antes desta etapa.** Os instaladores da etapa 1 mexem no `PATH`, e a sessão
+atual não enxerga o que acabou de entrar — sem isso, o `npm` abaixo pode não ser encontrado.
 
 ```bash
 npm install -g @anthropic-ai/claude-code
@@ -69,6 +74,10 @@ claude login                                    # autentica; o AiLM usa sua assi
 
 pip install pyyaml jsonschema psycopg2-binary   # no macOS/Linux pode ser pip3
 ```
+
+> Se `claude --version` falhar **depois** de instalar: o diretório de binários globais do npm não está
+> no `PATH` da sessão. Abra outro terminal; se persistir, veja onde o npm põe os binários com
+> `npm prefix -g` e confirme que esse caminho está no `PATH`.
 
 > `pyyaml` e `jsonschema` não são opcionais: o `validate.py` — que é gate do `ailm run` — importa os
 > dois. Sem eles a primeira demanda falha.
